@@ -3,9 +3,12 @@
 #include <wiringPi.h>
 #include <unistd.h>
 
-#define MOTOROUT1 14
-#define MOTOROUT2 15
-#define MOTORPWM 18
+//#define MOTOROUT1 14
+//#define MOTOROUT2 15
+//#define MOTORPWM 18
+#define MOTOROUT1 5
+#define MOTOROUT2 6
+#define MOTORPWM 13
 #define POWHIGH 1024
 #define POWLOW 300
 

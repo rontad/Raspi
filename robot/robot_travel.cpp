@@ -5,19 +5,12 @@
 
 using namespace std;
 
-#define MOTOR1_OUT1 14
-#define MOTOR1_OUT2 15
-#define MOTOR1_PWM 18
-#define MOTOR2_OUT1 5
-#define MOTOR2_OUT2 6
-#define MOTOR2_PWM 13
-#define POWHIGH 1024
-#define POWLOW 300
+#define STR(var) #var
 
 robotTravel::robotTravel(){
 
 	speed = 0;
-	direction = 3;
+	edirection = STOP;
 	travelStatus = 0;
 }
 
@@ -42,14 +35,14 @@ bool robotTravel::setSpeed( int speed ){
 	return true;	
 }
 
-bool robotTravel::setDirection( int direction ){
+bool robotTravel::setDirection( eDirection edirection ){
 
-	if( direction < 1 || direction > 9 ) {
-		cout << "Specified direction is not valid.(" << direction << ")" << endl;
+	if( edirection < 1 || edirection > 9 ) {
+		cout << "Specified direction is not valid.(" << edirection << ")" << endl;
 		return false;
 	}
 
-	this->direction = direction;
+	this->edirection = edirection;
 	return true;	
 }
 
@@ -64,9 +57,9 @@ bool robotTravel::setTravelStatus( int travelStatus ){
 	return true;	
 }
 
-int robotTravel::getDirection(){
+eDirection robotTravel::getDirection(){
 	
-	return direction;
+	return edirection;
 }
 
 int robotTravel::getTravelStatus(){
@@ -81,28 +74,30 @@ bool robotTravel::init(){
         return false;
     }
 
-    pinMode(MOTOR1_OUT1, OUTPUT);
-    pinMode(MOTOR1_OUT2, OUTPUT);
-    pinMode(MOTOR1_PWM, PWM_OUTPUT);
-    pinMode(MOTOR2_OUT1, OUTPUT);
-    pinMode(MOTOR2_OUT2, OUTPUT);
-    pinMode(MOTOR2_PWM, PWM_OUTPUT);
+    pinMode(MOTOR_RIGHT_OUT1, OUTPUT);
+    pinMode(MOTOR_RIGHT_OUT2, OUTPUT);
+    pinMode(MOTOR_RIGHT_PWM, PWM_OUTPUT);
+    pinMode(MOTOR_LEFT_OUT1, OUTPUT);
+    pinMode(MOTOR_LEFT_OUT2, OUTPUT);
+    pinMode(MOTOR_LEFT_PWM, PWM_OUTPUT);
 
-    digitalWrite(MOTOR1_OUT1, 0);
-    digitalWrite(MOTOR1_OUT2, 0);
-    digitalWrite(MOTOR1_PWM, 0);
-    digitalWrite(MOTOR2_OUT1, 0);
-    digitalWrite(MOTOR2_OUT2, 0);
-    digitalWrite(MOTOR2_PWM, 0);
+    digitalWrite(MOTOR_RIGHT_OUT1, 0);
+    digitalWrite(MOTOR_RIGHT_OUT2, 0);
+    digitalWrite(MOTOR_RIGHT_PWM, 0);
+    digitalWrite(MOTOR_LEFT_OUT1, 0);
+    digitalWrite(MOTOR_LEFT_OUT2, 0);
+    digitalWrite(MOTOR_LEFT_PWM, 0);
 
 	return true;
 }
 
 bool robotTravel::doTravel( int direction, int speed ){
 
-	if(!setDirection(direction)) return false;
+	eDirection edirection = static_cast<eDirection>(direction);
 
-	if( getDirection() == 3 ) {
+	if(!setDirection(edirection)) return false;
+
+	if( edirection == STOP ) {
 		setSpeed(0);
 		setTravelStatus(0);
 	}else{
@@ -110,84 +105,85 @@ bool robotTravel::doTravel( int direction, int speed ){
 		setTravelStatus(1);
 	}
 
-	sleep(1);
+	usleep(50000);
 
-	switch(getDirection()){
 
-		case 1:
-	        digitalWrite(MOTOR1_OUT1, 1);
-	        digitalWrite(MOTOR1_OUT2, 0);
-	        digitalWrite(MOTOR2_OUT1, 1);
-	        digitalWrite(MOTOR2_OUT2, 0);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+	switch(edirection){
+
+		case FORWARD:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 1);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 0);
+	        digitalWrite(MOTOR_LEFT_OUT1, 1);
+	        digitalWrite(MOTOR_LEFT_OUT2, 0);
+			pwmWrite(MOTOR_RIGHT_PWM, POW_HIGH*speed/100);
+			pwmWrite(MOTOR_LEFT_PWM, POW_HIGH*speed/100);
 			break;
-		case 2:
-	        digitalWrite(MOTOR1_OUT1, 0);
-	        digitalWrite(MOTOR1_OUT2, 1);
-	        digitalWrite(MOTOR2_OUT1, 0);
-	        digitalWrite(MOTOR2_OUT2, 1);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+		case BACK:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 0);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 1);
+	        digitalWrite(MOTOR_LEFT_OUT1, 0);
+	        digitalWrite(MOTOR_LEFT_OUT2, 1);
+			pwmWrite(MOTOR_RIGHT_PWM, POW_HIGH*speed/100);
+			pwmWrite(MOTOR_LEFT_PWM, POW_HIGH*speed/100);
 			break;
-		case 3:
-	        digitalWrite(MOTOR1_OUT1, 0);
-	        digitalWrite(MOTOR1_OUT2, 0);
-	        digitalWrite(MOTOR2_OUT1, 0);
-	        digitalWrite(MOTOR2_OUT2, 0);
-			pwmWrite(MOTOR1_PWM, 0);
-			pwmWrite(MOTOR2_PWM, 0);
+		case STOP:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 0);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 0);
+	        digitalWrite(MOTOR_LEFT_OUT1, 0);
+	        digitalWrite(MOTOR_LEFT_OUT2, 0);
+			pwmWrite(MOTOR_RIGHT_PWM, 0);
+			pwmWrite(MOTOR_LEFT_PWM, 0);
 			break;
-		case 4:
-	        digitalWrite(MOTOR1_OUT1, 1);
-	        digitalWrite(MOTOR1_OUT2, 0);
-	        digitalWrite(MOTOR2_OUT1, 1);
-	        digitalWrite(MOTOR2_OUT2, 0);
-			pwmWrite(MOTOR1_PWM, (1024*speed/100)*0.7);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+		case LEFT_FORWARD:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 1);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 0);
+	        digitalWrite(MOTOR_LEFT_OUT1, 1);
+	        digitalWrite(MOTOR_LEFT_OUT2, 0);
+			pwmWrite(MOTOR_RIGHT_PWM, POW_HIGH*speed/100);
+			pwmWrite(MOTOR_LEFT_PWM, (POW_HIGH*speed/100)*0.7);
 			break;
-		case 5:
-	        digitalWrite(MOTOR1_OUT1, 1);
-	        digitalWrite(MOTOR1_OUT2, 0);
-	        digitalWrite(MOTOR2_OUT1, 1);
-	        digitalWrite(MOTOR2_OUT2, 0);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, (1024*speed/100)*0.7);
+		case RIGHT_FORWARD:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 1);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 0);
+	        digitalWrite(MOTOR_LEFT_OUT1, 1);
+	        digitalWrite(MOTOR_LEFT_OUT2, 0);
+			pwmWrite(MOTOR_RIGHT_PWM, (POW_HIGH*speed/100)*0.7);
+			pwmWrite(MOTOR_LEFT_PWM, POW_HIGH*speed/100);
 			break;
-		case 6:
-	        digitalWrite(MOTOR1_OUT1, 0);
-	        digitalWrite(MOTOR1_OUT2, 1);
-	        digitalWrite(MOTOR2_OUT1, 0);
-	        digitalWrite(MOTOR2_OUT2, 1);
-			pwmWrite(MOTOR1_PWM, (1024*speed/100)*0.7);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+		case LEFT_BACK:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 0);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 1);
+	        digitalWrite(MOTOR_LEFT_OUT1, 0);
+	        digitalWrite(MOTOR_LEFT_OUT2, 1);
+			pwmWrite(MOTOR_RIGHT_PWM, POW_HIGH*speed/100);
+			pwmWrite(MOTOR_LEFT_PWM, (POW_HIGH*speed/100)*0.7);
 			break;
-		case 7:
-	        digitalWrite(MOTOR1_OUT1, 0);
-	        digitalWrite(MOTOR1_OUT2, 1);
-	        digitalWrite(MOTOR2_OUT1, 0);
-	        digitalWrite(MOTOR2_OUT2, 1);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, (1024*speed/100)*0.7);
+		case RIGHT_BACK:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 0);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 1);
+	        digitalWrite(MOTOR_LEFT_OUT1, 0);
+	        digitalWrite(MOTOR_LEFT_OUT2, 1);
+			pwmWrite(MOTOR_RIGHT_PWM, (POW_HIGH*speed/100)*0.7);
+			pwmWrite(MOTOR_LEFT_PWM, POW_HIGH*speed/100);
 			break;
-		case 8:
-	        digitalWrite(MOTOR1_OUT1, 0);
-	        digitalWrite(MOTOR1_OUT2, 1);
-	        digitalWrite(MOTOR2_OUT1, 1);
-	        digitalWrite(MOTOR2_OUT2, 0);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+		case LEFT_TURN:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 0);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 1);
+	        digitalWrite(MOTOR_LEFT_OUT1, 1);
+	        digitalWrite(MOTOR_LEFT_OUT2, 0);
+			pwmWrite(MOTOR_RIGHT_PWM, (POW_HIGH*speed/100)*0.5);
+			pwmWrite(MOTOR_LEFT_PWM, (POW_HIGH*speed/100)*0.5);
 			break;
-		case 9:
-	        digitalWrite(MOTOR1_OUT1, 1);
-	        digitalWrite(MOTOR1_OUT2, 0);
-	        digitalWrite(MOTOR2_OUT1, 0);
-	        digitalWrite(MOTOR2_OUT2, 1);
-			pwmWrite(MOTOR1_PWM, 1024*speed/100);
-			pwmWrite(MOTOR2_PWM, 1024*speed/100);
+		case RIGHT_TURN:
+	        digitalWrite(MOTOR_RIGHT_OUT1, 1);
+	        digitalWrite(MOTOR_RIGHT_OUT2, 0);
+	        digitalWrite(MOTOR_LEFT_OUT1, 0);
+	        digitalWrite(MOTOR_LEFT_OUT2, 1);
+			pwmWrite(MOTOR_RIGHT_PWM, (POW_HIGH*speed/100)*0.5);
+			pwmWrite(MOTOR_LEFT_PWM, (POW_HIGH*speed/100)*0.5);
 			break;
 	}
-	cout << "travel direction(" << direction << ") speed ("<< speed << ")" << endl;
+	cout << "travel direction(" << edirection << ") speed ("<< speed << ")" << endl;
 	return true;
 }
 

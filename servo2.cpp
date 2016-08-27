@@ -4,11 +4,11 @@
 #include <wiringPi.h>
 #include <unistd.h>
 
-#define MOTORPWM_X 18
-#define MOTORPWM_Y 13
+#define MOTORPWM_X 12	//18,12
+#define MOTORPWM_Y 19	//13,19
 
-#define SERVO_MIN 24
-#define SERVO_MAX 115
+#define SERVO_MIN 25
+#define SERVO_MAX 123
 
 int main()
 {
@@ -20,7 +20,7 @@ int main()
 	pinMode(MOTORPWM_X, PWM_OUTPUT);
 	pinMode(MOTORPWM_Y, PWM_OUTPUT);
 	pwmSetMode(PWM_MODE_MS);
-	pwmSetClock(400);
+	pwmSetClock(375);
 	pwmSetRange(1024);
 
 	int x = SERVO_MIN;
@@ -43,7 +43,7 @@ int main()
 		}else{
 			pwmWrite(MOTORPWM_Y, y);
 		}
-		usleep(50000);
+		usleep(5000);
 	}
 
 	return 0;

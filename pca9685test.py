@@ -14,14 +14,18 @@ import Adafruit_PCA9685
 #logging.basicConfig(level=logging.DEBUG)
 
 # Initialise the PCA9685 using the default address (0x40).
-pwm = Adafruit_PCA9685.PCA9685()
+#pwm = Adafruit_PCA9685.PCA9685()
+pwm = Adafruit_PCA9685.PCA9685(address=0x40)
 
 # Alternatively specify a different address and/or bus:
 #pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
 
 # Configure min and max servo pulse lengths
+#servo_min = 150  # Min pulse length out of 4096
+serv_min = 102 # 0.5(ms) * 4096 / 20(ms)
 servo_min = 150  # Min pulse length out of 4096
-servo_max = 600  # Max pulse length out of 4096
+#servo_max = 600  # Max pulse length out of 4096
+servo_max = 492  # 2.4(ms) * 4096 / 20(ms)
 
 # Helper function to make setting a servo pulse width simpler.
 def set_servo_pulse(channel, pulse):
@@ -34,8 +38,18 @@ def set_servo_pulse(channel, pulse):
     pulse //= pulse_length
     pwm.set_pwm(channel, 0, pulse)
 
+def set_degree(channel, degree):
+    if degree > 180:
+        degree = 180
+    elif degree < 0:
+        degree = 0
+
+    print("入力値は{0}です".format(num))
+    pulse = int((servo_max - servo_min)*degree/180+servo_min)
+    pwm.set_pwm(channel, 0, pulse)
+
 # Set frequency to 60hz, good for servos.
-pwm.set_pwm_freq(60)
+pwm.set_pwm_freq(50)
 
 print('Moving servo on channel 0, press Ctrl-C to quit...')
 while True:
@@ -46,13 +60,14 @@ while True:
     except ValueError:
         continue
         
-    print("入力値は{0}です".format(num))
-    if num > servo_max:
-        num = servo_max
-    elif num < servo_min:
-        num = servo_min
+#    print("入力値は{0}です".format(num))
+#    if num > servo_max:
+#        num = servo_max
+#    elif num < servo_min:
+#        num = servo_min
     
-    pwm.set_pwm(0, 0, num)
+#    pwm.set_pwm(0, 0, num)
+    set_degree(2, num)
     
     
     # Move servo on channel O between extremes.
